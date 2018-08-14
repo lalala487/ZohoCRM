@@ -1,0 +1,7 @@
+[crm]
+api.url=
+api.user_identifier=
+api.tokenmanagement=
+[mysql]
+username=
+password=

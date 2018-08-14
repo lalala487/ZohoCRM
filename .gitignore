@@ -130,3 +130,5 @@ lib-cov
 *.out
 *.pid
 
+/resources/oauth_configuration.properties
+/resources/configuration.properties
