@@ -28,6 +28,14 @@ module.exports.routes = {
     view: 'pages/homepage'
   },
 
+  'GET /modules': {
+    action: 'modules/view-modules'
+  },
+
+  'POST /modules': {
+    action: 'modules/get-fields'
+  },
+
   /***************************************************************************
   *                                                                          *
   * More custom routes here...                                               *
