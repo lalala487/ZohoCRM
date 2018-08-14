@@ -36,6 +36,8 @@ module.exports.routes = {
     action: 'modules/get-fields'
   },
 
+  '/zoho/token/check-or-generate': { action: 'zoho/token/check-or-generate' },// TODO Maybe disable after token setup
+
   /***************************************************************************
   *                                                                          *
   * More custom routes here...                                               *

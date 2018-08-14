@@ -23,21 +23,28 @@ module.exports = {
   fn: async function (inputs, exits) {
 
     const ZCRMRestClient = await sails.helpers.zoho.client.get();
+    const {grantToken} = inputs;
+    let tokenPreset = false;
+
+    setTimeout(async () => {
+      if (!tokenPreset) {
+        try {
+          await generateToken(ZCRMRestClient, grantToken);
+          return exits.success();
+        } catch (e) {
+          return exits.error(e);
+        }
+      }
+    }, 5000);
+
     try {
-      /*
-      await fetchRecords(ZCRMRestClient)
-      */
-      const authResponse = await ZCRMRestClient.generateAuthTokens(null, inputs.grantToken);
+      await fetchRecords(ZCRMRestClient);
+      tokenPreset = true;
 
-      sails.log('token successfully generated');
-      console.log('access token :'+authResponse.access_token);
-      console.log('refresh token :'+authResponse.refresh_token);
-      console.log('expires in :'+authResponse.expires_in);
+      return exits.success();
     } catch (e) {
+      console.error(e);
     }
-
-    // All done.
-    return exits.success();
 
   }
 
@@ -52,5 +59,14 @@ async function fetchRecords(ZCRMRestClient) {
   params.per_page = 5;
   input.params = params;
   return await ZCRMRestClient.API.MODULES.get(input);
+}
+
+async function generateToken(ZCRMRestClient, grantToken) {
+  const authResponse = await ZCRMRestClient.generateAuthTokens(null, grantToken);
+
+  sails.log('token successfully generated');
+  console.log('access token :'+authResponse.access_token);
+  console.log('refresh token :'+authResponse.refresh_token);
+  console.log('expires in :'+authResponse.expires_in);
 }
 

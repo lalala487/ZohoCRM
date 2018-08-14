@@ -1,9 +1,9 @@
 <div class="modules-page">
   <div class="main container clearfix">
     <form action="/modules" method="post">
-      <select name="modules[]" id="modules" title="Select Zoho modules" multiple required>
+      <select name="modules[]" id="modules" title="Select Zoho modules" multiple required size="<%= modules.length %>">
         <% modules.forEach(function(module){ %>
-          <option value="<%= module.name %>"><%= module.title %></option>
+          <option value="<%= module.code %>"><%= module.title %></option>
         <% }); %>
       </select>
       <button>Submit</button>

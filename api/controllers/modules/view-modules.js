@@ -18,24 +18,13 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    const zohoModules = [
-      {
-        name: 'Contacts',
-        title: 'Contacts',
-      },
-      {
-        name: 'Leads',
-        title: 'Leads',
-      },
-      {
-        name: 'CustomModule1',
-        title: 'Transactions',
-      },
-    ];
+    const zohoModules = await sails.helpers.zoho.modules.get();
 
-    const modules = zohoModules.map(module => {
-      if (module.title !== module.name) {
-        module.title += ` - ${module.name}`;
+    const modules = zohoModules.map(({module_name: name, plural_label: title, api_name: code, ...zModule}) => {
+      const module = {title, code};
+
+      if (title !== name) {
+        module.title += ` - ${name}`;
       }
 
       return module;

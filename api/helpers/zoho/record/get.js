@@ -41,21 +41,10 @@ module.exports = {
     input.module = module;
     const response = await ZCRMRestClient.API.MODULES.get(input);
 
-    let details;
-    try {
-      details = JSON.parse(response.body);
-    } catch (e) {
-      details = response.body;
-    }
+    const details = sails.helpers.zoho.response.process(response);
 
-
-    if (response.statusCode === 200) {
-      const record = details.data[0];
-      return exits.success(record);
-    } else {
-      return exits.error(details);
-    }
-
+    const record = details.data[0];
+    return exits.success(record);
   }
 
 
