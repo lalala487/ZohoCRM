@@ -23,13 +23,13 @@ module.exports = {
 
   fn: async function (inputs, exits) {
     const {module} = inputs;
-    const connectionParams = {};// TODO
-    const connection = await sails.helpers.databaseJs.connection.get(connectionParams);
+
+    const layer = await sails.helpers.widestage.layer.get(module);
+    const dataSource = await sails.helpers.widestage.datasource.get(layer);
+
+    const connection = await sails.helpers.databaseJs.connection.get(dataSource.params[0].connection);
     // All done.
     return exits.success(connection);
-
   }
-
-
 };
 

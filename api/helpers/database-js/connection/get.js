@@ -16,7 +16,7 @@ module.exports = {
         password: 'root',
         host: '127.0.0.1',
         port: '3306',
-        db: 'some_db',
+        database: 'some_db',
       },
       required: true,
       type: {},
@@ -42,8 +42,8 @@ module.exports = {
     const {params} = inputs;
     try {
       const Database = require('database-js').Connection;
-      const {userName, password, host, port, db} = params;
-      const connection = new Database(`database-js-mysql://${userName}:${password}@${host}:${port}/${db}`);
+      const {userName, password, host, port, database} = params;
+      const connection = new Database(`database-js-mysql://${userName}:${password}@${host}:${port}/${database}`);
       return exits.success(connection);
     } catch (e) {
       return exits.cantEstablishConnection(e, params);
