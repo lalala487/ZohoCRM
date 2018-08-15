@@ -36,6 +36,8 @@ module.exports.routes = {
     action: 'modules/get-fields'
   },
 
+  'GET /dev/module': { action: 'dev/module/process' },// TODO Disable when finish development
+
   '/zoho/token/check-or-generate': { action: 'zoho/token/check-or-generate' },// TODO Maybe disable after token setup
 
   /***************************************************************************
