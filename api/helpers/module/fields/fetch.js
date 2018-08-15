@@ -29,27 +29,28 @@ module.exports = {
 
     const connection = await sails.helpers.widestage.connection.get(module);
 
-    const fieldsMap = await getApiFields();
+    const fieldsMap = await getApiFields(module);
 
-    const table = await createMappingTable(connection, fieldsMap);
+    const table = await createMappingTable(connection, module, fieldsMap);
 
     await sails.helpers.db.record.insert(connection, table, fieldsMap);
 
     return exits.success();
   }
 };
-async function getApiFields() {
+
+async function getApiFields(module) {
   const fields = await sails.helpers.zoho.fields.get(module);
   const fieldNameIndex = 'api_name';
 
   return fields.reduce((carry, field) => {
     // TODO Clean unused data if required
-    carry[field[fieldNameIndex]] = field;
+    carry[field[fieldNameIndex]] = JSON.stringify(field);
     return carry;
   }, {});
 }
 
-async function createMappingTable(connection, fieldsMap) {
+async function createMappingTable(connection, module, fieldsMap) {
   const apiFields = Object.keys(fieldsMap);
   const tableRows = apiFields.reduce((carry, apiField) => {
     if (carry) {

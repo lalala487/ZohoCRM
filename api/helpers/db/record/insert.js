@@ -45,7 +45,7 @@ module.exports = {
       return carry;
     }, '');
 
-    const sql = `INSERT INTO ${table}([${keys.join('],[')}]) VALUES (${valuesPlaceholders})`;
+    const sql = `INSERT INTO ${table}(\`${keys.join('`,`')}\`) VALUES (${valuesPlaceholders})`;
 
     const result = await sails.helpers.databaseJs.execute(connection, sql, values);
 
