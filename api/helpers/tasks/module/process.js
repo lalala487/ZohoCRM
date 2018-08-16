@@ -25,35 +25,77 @@ module.exports = {
 
     const {module} = inputs;
 
-    const records = await process(module, sails.config.custom.zoho.chunkSize);
+    const dataLayer = await sails.helpers.widestage.layer.get(module);
 
-    return exits.success(records);
+    await process(dataLayer, sails.config.custom.zoho.chunkSize);
+
+    return exits.success();
   }
 
 
 };
 
-async function process(module, limit, page = 1) {
-  const records = await getRecords(module, limit, page);
-  if (records) {
-    await getRecords(module, limit, ++page);
+async function process(dataLayer, limit, page = 1) {
+  const prepared = await getRecords(dataLayer, limit, page);
+  const {records} = prepared;
+  if (records.length) {
+    await insertToZoho(dataLayer, prepared);
+
+    await process(dataLayer, limit, ++page);
   }
 }
 
-async function getRecords(module, limit, page = 1) {
+async function insertToZoho(dataLayer, {records, uniqueData}) {
+  // const inserted = await sails.helpers.zoho.record.insert(records);
+  const inserted = {data: [{code: 'SUCCESS', details: {id: + (new Date())}},{code: 'SUCCESS', details: {id: + (new Date()) + 35}}]};
 
-  const mapping = await sails.helpers.module.mapping.get(module);
+  if (inserted.hasOwnProperty('data')) {
+    const FIELDS = require('../../../enums/DB/FIELDS');
+    const WIDESTAGE_LAYER = require('../../../enums/WIDESTAGE/FIELDS');
+    const uniqueField = dataLayer.objects.find(field => {
+      return field.elementLabel === WIDESTAGE_LAYER.UNIQUE;
+    });
 
-  const wideStageData = await sails.helpers.widestage.layer.explore(module, limit, page);
+    const dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
+    const connection = await sails.helpers.widestage.connection.get(dataSource);
+    await sails.helpers.util.asyncForEach(inserted.data, async ({code, details}, index) => {
+      if (code === 'SUCCESS') {
+        const sql = `UPDATE ${uniqueField.collectionName} SET ${FIELDS.ZOHO_ID} = ? WHERE ${uniqueField.elementName} = ?;`;
+        await sails.helpers.databaseJs.execute(connection, sql, [details.id, uniqueData[index]]);
+      }
+    });
+  }
+}
+
+async function getRecords(dataLayer, limit, page = 1) {
+
+  const mapping = await sails.helpers.module.mapping.get(dataLayer);
+
+  const wideStageData = await sails.helpers.widestage.layer.explore(dataLayer, limit, page);
+
+  const uniqueField = getUniqueField(dataLayer);
+  const uniqueFieldIndex = sails.helpers.widestage.field.id.prepare(uniqueField);
+  const uniqueData = [];
 
   const records = wideStageData.map(row => {
-    return _.transform(mapping, (carry, target, source) => {
+    const record = _.transform(mapping, (carry, target, source) => {
       if (row.hasOwnProperty(source)) {
         carry[target] = row[source];
       }
     });
+
+    uniqueData.push(row[uniqueFieldIndex]);
+
+    return record;
   });
 
-  return records;
+  return {records, uniqueData};
+}
+
+function getUniqueField(dataLayer) {
+  const WIDESTAGE_LAYER = require('../../../enums/WIDESTAGE/FIELDS');
+  return dataLayer.objects.find(field => {
+    return field.elementLabel === WIDESTAGE_LAYER.UNIQUE;
+  });
 }
 

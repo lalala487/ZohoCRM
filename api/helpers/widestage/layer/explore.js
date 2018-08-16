@@ -8,10 +8,12 @@ module.exports = {
 
 
   inputs: {
-    name: {
-      example: 'Contacts',
+    dataLayer: {
+      example: {
+        name: 'Contacts'
+      },
       required: true,
-      type: 'string',
+      type: {},
     },
     limit: {
       defaultsTo: 200,
@@ -33,9 +35,8 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    const {name, limit, page} = inputs;
+    const {dataLayer, limit, page} = inputs;
 
-    const dataLayer = await sails.helpers.widestage.layer.get(name);
     const _dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
 
     const collections = prepareCollections(dataLayer);

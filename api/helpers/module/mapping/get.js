@@ -8,10 +8,12 @@ module.exports = {
 
 
   inputs: {
-    module: {
-      example: 'Contacts',
+    dataLayer: {
+      example: {
+        name: 'Contacts'
+      },
       required: true,
-      type: 'string',
+      type: {},
     }
   },
 
@@ -22,12 +24,11 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    const {module} = inputs;
-    const dataLayer = await sails.helpers.widestage.layer.get(module);
+    const {dataLayer} = inputs;
+    const module = dataLayer.name;
 
     const mappingLayer = await sails.helpers.widestage.layer.get(`${module}_mapping`);
 
-    // TODO provide unique old record field for setup Zoho Id on success insert to Zoho
     const mapping = mappingLayer.params.joins.reduce((carry, join) => {
       for (let field of dataLayer.objects) {
         if (join.sourceElementName === field.elementName && join.sourceCollectionName === field.collectionName) {

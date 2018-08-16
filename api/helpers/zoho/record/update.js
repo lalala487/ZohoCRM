@@ -38,8 +38,10 @@ module.exports = {
     input.body = {data: records};
     const response = await ZCRMRestClient.API.MODULES.put(input);
 
+    const processedResponse = await sails.helpers.zoho.response.process(response);
+
     // All done.
-    return exits.success(JSON.parse(response.body));
+    return exits.success(processedResponse);
 
   }
 
