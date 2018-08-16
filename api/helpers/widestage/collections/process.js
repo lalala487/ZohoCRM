@@ -53,8 +53,7 @@ module.exports = {
         elements.push(field);
 
         if (field.hidden != true) {
-          const elementID = 'wst' + field.elementID.toLowerCase();
-          const theElementID = elementID.replace(/[^a-zA-Z ]/g, '');
+          const theElementID = sails.helpers.widestage.field.id.prepare(field);
           fields.push(table.collectionID + '.' + field.elementName + ' as ' + theElementID);
           groupBy.push(table.collectionID + '.' + field.elementName);
         }
