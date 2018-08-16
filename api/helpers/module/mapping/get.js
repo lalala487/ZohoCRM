@@ -30,7 +30,7 @@ module.exports = {
     const mapping = mappingLayer.params.joins.reduce((carry, join) => {
       for (let field of dataLayer.objects) {
         if (join.sourceElementName === field.elementName && join.sourceCollectionName === field.collectionName) {
-          carry[join.sourceElementName] = join.targetElementName;
+          carry['wst' + field.elementID] = join.targetElementName;
           break;
         }
       }

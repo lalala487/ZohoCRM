@@ -27,7 +27,7 @@ module.exports = {
 
     const {module} = inputs;
 
-    const connection = await sails.helpers.widestage.connection.get(module);
+    const connection = await sails.helpers.module.connection.get(module);
 
     const fieldsMap = await getApiFields(module);
 

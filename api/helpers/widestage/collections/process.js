@@ -22,6 +22,11 @@ module.exports = {
       defaultsTo: {},
       example: {},
       type: {},
+    },
+    params: {
+      defaultsTo: {page: 1},
+      example: {},
+      type: {},
     }
   },
 
@@ -33,7 +38,7 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    const {query, collections, dataSource} = inputs;
+    const {query, collections, dataSource, params} = inputs;
 
 
     const fields = [];
@@ -56,14 +61,16 @@ module.exports = {
       });
     });
 
-    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSource);
+    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSource, params);
 
-    const result = sql;// TODO execute SQL
+    const connection = await sails.helpers.widestage.connection.get(dataSource);
+
+    const result = await sails.helpers.databaseJs.query(connection, sql);
 
     const finalResults = getFormatedResult(elements, result);
 
     // All done.
-    return exits.success({result: 1, data: finalResults, sql});
+    return exits.success(finalResults);
 
   }
 
@@ -77,12 +84,11 @@ function findLeadTable(collections) {
   }
 
   let leadTableJoinsCount = 0;
-  for (var c in collections) {
-    var table = collections[c];
+  collections.forEach((table) => {
     table.joinsCount = 0;
 
-    for (var j in table.joins) {
-      var join = table.joins[j];
+    for (let j in table.joins) {
+      const join = table.joins[j];
       if (join.sourceCollectionID == table.collectionID) {
         table.joinsCount = table.joinsCount + 1;
       }
@@ -96,12 +102,12 @@ function findLeadTable(collections) {
       leadTable = table;
       leadTableJoinsCount = table.joinsCount;
     }
+  });
 
-  }
   return leadTable;
 }
 
-function prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSource) {
+function prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSource, params) {
   let sql = 'SELECT ';
   for (let f in fields) {
     sql += fields[f];
@@ -113,13 +119,10 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSou
 
   const leadSchema = leadTable.schema || leadTable;
 
-  if (leadSchema.isSQL == true) {
-    sql += ' FROM (' + leadSchema.sqlQuery + ') ';
-  } else {
-    sql += ' FROM ' + leadSchema.collectionName + ' ';
-  }
+  const fromSql = leadSchema.isSQL === true ? '(' + leadSchema.sqlQuery + ')' : leadSchema.collectionName;
 
-  sql += leadTable.collectionID + getJoins(leadTable.collectionID, collections, []);
+  sql += ' FROM ' + fromSql + ' ' + leadTable.collectionID + getJoins(leadTable.collectionID, collections, []);
+
   if (groupBy.length > 0) {
     sql += ' GROUP BY ';
     for (let f in groupBy) {
@@ -190,8 +193,8 @@ function getFormatedResult(elementSchema, results) {
   const finalResults = [];
   const moment = require('moment');
   results.forEach(result => {
+    const newRecord = {};
     elementSchema.forEach(field => {
-      const newRecord = {};
       if (field.elementType == 'date' && field.format) {
         result[field.id + '_original'] = result[field.id];
         if (result[field.id]) {
@@ -216,7 +219,8 @@ function getJoins(collectionID, collections, processedCollections) {
       processedCollections.push(collectionID);
 
 
-      table.joins.forEach(join => {
+      for (let j in table.joins) {
+        const join = table.joins[j];
         if (join.sourceCollectionID == table.collectionID && (processedCollections.indexOf(join.targetCollectionID) == -1)) {
           if (join.joinType == 'default') {
             fromSQL += ' INNER JOIN ';
@@ -233,7 +237,6 @@ function getJoins(collectionID, collections, processedCollections) {
 
           fromSQL += ' ON (' + join.sourceCollectionID + '.' + join.sourceElementName + ' = ' + join.targetCollectionID + '.' + join.targetElementName + ')';
           fromSQL += getJoins(join.targetCollectionID, collections, processedCollections);
-
         }
 
         if (join.targetCollectionID == table.collectionID && (processedCollections.indexOf(join.sourceCollectionID) == -1)) {
@@ -255,8 +258,7 @@ function getJoins(collectionID, collections, processedCollections) {
 
           fromSQL += getJoins(join.sourceCollectionID, collections, processedCollections);
         }
-
-      });
+      }
 
 
     }
