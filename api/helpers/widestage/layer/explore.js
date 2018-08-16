@@ -18,8 +18,8 @@ module.exports = {
       example: 35,
       type: 'number',
     },
-    skip: {
-      defaultsTo: 0,
+    page: {
+      defaultsTo: 1,
       example: 2,
       type: 'number',
     },
@@ -33,7 +33,7 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    const {name, limit, skip} = inputs;
+    const {name, limit, page} = inputs;
 
     const dataLayer = await sails.helpers.widestage.layer.get(name);
     const _dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
@@ -47,7 +47,7 @@ module.exports = {
 
     processJoines(dataLayer, collections);
 
-    const result = await sails.helpers.widestage.collections.process(dataSource, collections);
+    const result = await sails.helpers.widestage.collections.process(dataSource, collections, {page, limit});
 
     // All done.
     return exits.success(result);

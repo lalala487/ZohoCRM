@@ -18,11 +18,6 @@ module.exports = {
       required: true,
       type: [{}],
     },
-    query: {
-      defaultsTo: {},
-      example: {},
-      type: {},
-    },
     params: {
       defaultsTo: {page: 1},
       example: {},
@@ -38,7 +33,7 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    const {query, collections, dataSource, params} = inputs;
+    const {collections, dataSource, params} = inputs;
 
 
     const fields = [];
@@ -60,7 +55,7 @@ module.exports = {
       });
     });
 
-    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSource, params);
+    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, params);
 
     const connection = await sails.helpers.widestage.connection.get(dataSource);
 
@@ -106,7 +101,7 @@ function findLeadTable(collections) {
   return leadTable;
 }
 
-function prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSource, params) {
+function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, params) {
   let sql = 'SELECT ';
   for (let f in fields) {
     sql += fields[f];
@@ -131,48 +126,10 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, query, dataSou
       }
     }
   }
-  if (query.order) {
-    if (query.order.length > 0) {
-      let theOrderByString = '';
-      query.order.forEach(theOrderField => {
-        const elementID = 'wst' + theOrderField.elementID.toLowerCase();
-        const theElementID = elementID.replace(/[^a-zA-Z ]/g, '');
-        const theSortOrderFieldName = theOrderField.collectionID + '.' + theOrderField.elementName;
-        const theOrderFieldName = theSortOrderFieldName + ' as ' + theElementID;
-        let sortType = '';
-        if (theOrderField.sortType == 1) {
-          sortType = ' DESC';
-        }
-        const theIndex = fields.indexOf(theOrderFieldName);
-        if (theOrderByString !== '') {
-          theOrderByString += ', ';
-        }
-        if (theIndex >= 0) {//The order by field is in the result set
-          theOrderByString += (theIndex + 1) + sortType;
-        } else {//No index, the field is not in the result set
-          theOrderByString += theSortOrderFieldName + sortType;
-        }
-      });
-      if (theOrderByString !== '') {
-        sql += ' ORDER BY ' + theOrderByString;
-      }
-    }
-  }
 
-  let pageSize;
-
-  if (dataSource.params[0].packetSize) {
-    if (dataSource.params[0].packetSize != -1) {
-      pageSize = dataSource.params[0].packetSize;
-    }
-  } else {
-    if (config.query.defaultRecordsPerPage > 1) {
-      pageSize = config.query.defaultRecordsPerPage;
-    }
-  }
-
-  if (typeof pageSize !== 'undefined') {
-    sql = setLimitToSQL(sql, pageSize, ((params.page - 1) * pageSize));
+  {
+    const {page, limit: pageSize} = params;
+    sql = setLimitToSQL(sql, pageSize, ((page - 1) * pageSize));
   }
   //Fix for filters with having and normal filters
   sql = sql.replace('WHERE  AND', 'WHERE');

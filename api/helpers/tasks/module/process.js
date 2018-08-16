@@ -25,7 +25,7 @@ module.exports = {
 
     const {module} = inputs;
 
-    const records = await getRecords(module, 1, 0);
+    const records = await process(module, sails.config.custom.zoho.chunkSize);
 
     return exits.success(records);
   }
@@ -33,11 +33,18 @@ module.exports = {
 
 };
 
-async function getRecords(module, limit, skip = 0) {
+async function process(module, limit, page = 1) {
+  const records = await getRecords(module, limit, page);
+  if (records) {
+    await getRecords(module, limit, ++page);
+  }
+}
+
+async function getRecords(module, limit, page = 1) {
 
   const mapping = await sails.helpers.module.mapping.get(module);
 
-  const wideStageData = await sails.helpers.widestage.layer.explore(module, limit, skip);
+  const wideStageData = await sails.helpers.widestage.layer.explore(module, limit, page);
 
   const records = wideStageData.map(row => {
     return _.transform(mapping, (carry, target, source) => {

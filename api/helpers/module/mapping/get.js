@@ -27,6 +27,7 @@ module.exports = {
 
     const mappingLayer = await sails.helpers.widestage.layer.get(`${module}_mapping`);
 
+    // TODO provide unique old record field for setup Zoho Id on success insert to Zoho
     const mapping = mappingLayer.params.joins.reduce((carry, join) => {
       for (let field of dataLayer.objects) {
         if (join.sourceElementName === field.elementName && join.sourceCollectionName === field.collectionName) {
