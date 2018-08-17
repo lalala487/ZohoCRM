@@ -57,14 +57,14 @@ async function createMappingTable(connection, module, fieldsMap) {
       carry += ',\n ';
     }
 
-    carry += `${apiField} JSON NOT NULL`;
+    carry += `\`${apiField}\` BLOB NOT NULL`;
 
     return carry;
   }, '');
 
   const table = `${module}_fields`;
 
-  const createTableSql = `CREATE TABLE ${table} (\n ${tableRows}\n)`;
+  const createTableSql = `CREATE TABLE ${table} (\n ${tableRows}\n) ROW_FORMAT=DYNAMIC`;
 
   await sails.helpers.databaseJs.execute(connection, createTableSql);
 
