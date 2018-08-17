@@ -46,18 +46,16 @@ async function process(dataLayer, limit, page = 1) {
 }
 
 async function insertToZoho(dataLayer, {records, uniqueData}) {
-  // const inserted = await sails.helpers.zoho.record.insert(records);
-  const inserted = {data: [{code: 'SUCCESS', details: {id: + (new Date())}},{code: 'SUCCESS', details: {id: + (new Date()) + 35}}]};
+  const inserted = await sails.helpers.zoho.record.insert(records);
+  // const inserted = {data: [{code: 'SUCCESS', details: {id: + (new Date())}},{code: 'SUCCESS', details: {id: + (new Date()) + 35}}]};//TESTCODE
 
   if (inserted.hasOwnProperty('data')) {
     const FIELDS = require('../../../enums/DB/FIELDS');
-    const WIDESTAGE_LAYER = require('../../../enums/WIDESTAGE/FIELDS');
-    const uniqueField = dataLayer.objects.find(field => {
-      return field.elementLabel === WIDESTAGE_LAYER.UNIQUE;
-    });
 
-    const dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
-    const connection = await sails.helpers.widestage.connection.get(dataSource);
+    const uniqueField = getUniqueField(dataLayer);
+
+    const connection = await getDbConnection(dataLayer);
+
     await sails.helpers.util.asyncForEach(inserted.data, async ({code, details}, index) => {
       if (code === 'SUCCESS') {
         const sql = `UPDATE ${uniqueField.collectionName} SET ${FIELDS.ZOHO_ID} = ? WHERE ${uniqueField.elementName} = ?;`;
@@ -68,19 +66,24 @@ async function insertToZoho(dataLayer, {records, uniqueData}) {
 }
 
 async function getRecords(dataLayer, limit, page = 1) {
-
-  const mapping = await sails.helpers.module.mapping.get(dataLayer);
-
   const wideStageData = await sails.helpers.widestage.layer.explore(dataLayer, limit, page);
+
+  return await mapRecords(dataLayer, wideStageData);
+}
+
+async function mapRecords(dataLayer, wideStageData) {
+  const mapping = await sails.helpers.module.mapping.get(dataLayer);
 
   const uniqueField = getUniqueField(dataLayer);
   const uniqueFieldIndex = sails.helpers.widestage.field.id.prepare(uniqueField);
   const uniqueData = [];
 
+  const zohoTypes = await getZohoFieldTypes(dataLayer);
+
   const records = wideStageData.map(row => {
     const record = _.transform(mapping, (carry, target, source) => {
       if (row.hasOwnProperty(source)) {
-        carry[target] = row[source];
+        carry[target] = prepareZohoData(row[source], zohoTypes[target]);
       }
     });
 
@@ -92,10 +95,69 @@ async function getRecords(dataLayer, limit, page = 1) {
   return {records, uniqueData};
 }
 
+async function getZohoFieldTypes(dataLayer) {
+  const connection = await getDbConnection(dataLayer);
+  const module = dataLayer.name;
+  const sql = `SELECT * FROM ${module}_fields`;
+  const rows = await sails.helpers.databaseJs.query(connection, sql);
+
+  const params = rows[0];
+  const fields = {};
+
+  for (const [field, blobedConfig] of Object.entries(params)) {
+    const {api_name, auto_number, businesscard_supported, created_source, id, view_type, visible, webhook,
+      ...config} = JSON.parse(blobedConfig.toString('utf8'));
+    fields[field] = config;
+  }
+
+  return fields;
+}
+
+function prepareZohoData(value, config) {
+  const moment = require('moment');
+  let prepared;
+  switch (config.data_type) {
+    case 'lookup':
+    case 'ownerlookup':
+      prepared = {id: value};
+      break;
+    case 'bigint':
+    case 'currency':
+    case 'double':
+    case 'integer':
+      prepared = value;//CHECKME do we need convert value here?
+      break;
+    case 'picklist':// TODO maybe add option validation
+      prepared = value;
+      break;
+    case 'date':
+      prepared = moment(value).format('YYYY-MM-DD');
+      break;
+    case 'datetime':
+      prepared = moment(value).format('YYYY-MM-DD HH:mm:ss');
+      break;
+    default:
+      prepared = value;
+  }
+
+  return prepared;
+}
+
+async function getDbConnection(dataLayer) {
+  const dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
+  return await sails.helpers.widestage.connection.get(dataSource);
+}
+
 function getUniqueField(dataLayer) {
   const WIDESTAGE_LAYER = require('../../../enums/WIDESTAGE/FIELDS');
-  return dataLayer.objects.find(field => {
+  const uniqueField = dataLayer.objects.find(field => {
     return field.elementLabel === WIDESTAGE_LAYER.UNIQUE;
   });
+
+  if (uniqueField) {
+    return uniqueField;
+  } else {
+    throw new Error(`Missed ${WIDESTAGE_LAYER} in data layer ${dataLayer.name}`);
+  }
 }
 
