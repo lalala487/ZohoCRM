@@ -36,7 +36,7 @@ module.exports = {
       details = response.body;
     }
 
-    if (response.statusCode === 200) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       return exits.success(details);
     } else {
       return exits.error(details);
