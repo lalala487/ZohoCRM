@@ -45,23 +45,28 @@ async function process(dataLayer, limit, page = 1) {
   }
 }
 
+async function saveInsertedData(dataLayer, inserted, uniqueData) {
+  const FIELDS = require('../../../enums/DB/FIELDS');
+
+  const uniqueField = getUniqueField(dataLayer);
+
+  const connection = await getDbConnection(dataLayer);
+
+  await sails.helpers.util.asyncForEach(inserted.data, async ({code, details}, index) => {
+    if (code === 'SUCCESS') {
+      const sql = `UPDATE ${uniqueField.collectionName} SET ${FIELDS.ZOHO_ID} = ? WHERE ${uniqueField.elementName} = ?;`;
+      await sails.helpers.databaseJs.execute(connection, sql, [details.id, uniqueData[index]]);
+    }
+  });
+}
+
 async function insertToZoho(dataLayer, {records, uniqueData}) {
-  const inserted = await sails.helpers.zoho.record.insert(records);
+  const module = dataLayer.name;
+  const inserted = await sails.helpers.zoho.record.insert(records, module);
   // const inserted = {data: [{code: 'SUCCESS', details: {id: + (new Date())}},{code: 'SUCCESS', details: {id: + (new Date()) + 35}}]};//TESTCODE
 
   if (inserted.hasOwnProperty('data')) {
-    const FIELDS = require('../../../enums/DB/FIELDS');
-
-    const uniqueField = getUniqueField(dataLayer);
-
-    const connection = await getDbConnection(dataLayer);
-
-    await sails.helpers.util.asyncForEach(inserted.data, async ({code, details}, index) => {
-      if (code === 'SUCCESS') {
-        const sql = `UPDATE ${uniqueField.collectionName} SET ${FIELDS.ZOHO_ID} = ? WHERE ${uniqueField.elementName} = ?;`;
-        await sails.helpers.databaseJs.execute(connection, sql, [details.id, uniqueData[index]]);
-      }
-    });
+    await saveInsertedData(dataLayer, inserted, uniqueData);
   }
 }
 
@@ -105,8 +110,7 @@ async function getZohoFieldTypes(dataLayer) {
   const fields = {};
 
   for (const [field, blobedConfig] of Object.entries(params)) {
-    const {api_name, auto_number, businesscard_supported, created_source, id, view_type, visible, webhook,
-      ...config} = JSON.parse(blobedConfig.toString('utf8'));
+    const {api_name, created_source, ...config} = JSON.parse(blobedConfig.toString('utf8'));
     fields[field] = config;
   }
 
@@ -117,6 +121,13 @@ function prepareZohoData(value, config) {
   const moment = require('moment');
   let prepared;
   switch (config.data_type) {
+    case 'boolean':
+      if (typeof value === 'string') {
+        prepared = value === 'true';
+      } else {
+        prepared = !!value;
+      }
+      break;
     case 'lookup':
     case 'ownerlookup':
       prepared = {id: value};
@@ -127,6 +138,9 @@ function prepareZohoData(value, config) {
     case 'integer':
       prepared = value;//CHECKME do we need convert value here?
       break;
+    case 'multiselectpicklist':
+      prepared = value.split(',');
+      break;
     case 'picklist':// TODO maybe add option validation
       prepared = value;
       break;
@@ -134,7 +148,7 @@ function prepareZohoData(value, config) {
       prepared = moment(value).format('YYYY-MM-DD');
       break;
     case 'datetime':
-      prepared = moment(value).format('YYYY-MM-DD HH:mm:ss');
+      prepared = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
       break;
     default:
       prepared = value;
@@ -157,7 +171,7 @@ function getUniqueField(dataLayer) {
   if (uniqueField) {
     return uniqueField;
   } else {
-    throw new Error(`Missed ${WIDESTAGE_LAYER} in data layer ${dataLayer.name}`);
+    throw new Error(`Missed ${WIDESTAGE_LAYER.UNIQUE} in data layer ${dataLayer.name}`);
   }
 }
 

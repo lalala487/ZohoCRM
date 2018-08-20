@@ -43,11 +43,31 @@ async function getApiFields(module) {
   const fields = await sails.helpers.zoho.fields.get(module);
   const fieldNameIndex = 'api_name';
 
-  return fields.reduce((carry, field) => {
+  const indexesToClean = ['auto_number', 'businesscard_supported', 'id', 'read_only', 'view_type', 'visible', 'webhook'];
+  const groupByTypes = {};
+
+  const apiFields = fields.reduce((carry, field) => {
     // TODO Clean unused data if required
-    carry[field[fieldNameIndex]] = JSON.stringify(field);
+    const {read_only: readOnly} = field;
+
+    indexesToClean.forEach(index => {
+      delete field[index];
+    });
+
+    if (!readOnly) {
+      if (!groupByTypes.hasOwnProperty(field.data_type)) {
+        groupByTypes[field.data_type] = [];
+      }
+      groupByTypes[field.data_type].push(field);
+      carry[field[fieldNameIndex]] = JSON.stringify(field);
+    } else {
+      console.log(field);
+    }
+
     return carry;
   }, {});
+
+  return apiFields;
 }
 
 async function createMappingTable(connection, module, fieldsMap) {
