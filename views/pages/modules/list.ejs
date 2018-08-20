@@ -1,6 +1,6 @@
 <div class="modules-page">
   <div class="main container clearfix">
-    <form action="/modules" method="post">
+    <form action="modules" method="post">
       <select name="modules[]" id="modules" title="Select Zoho modules" multiple required size="<%= modules.length %>">
         <% modules.forEach(function(module){ %>
           <option value="<%= module.code %>"><%= module.title %></option>

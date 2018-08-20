@@ -30,7 +30,7 @@ module.exports = {
     if (layer) {
       return exits.success(layer);
     } else {
-      return exits.layerNotFound(module);
+      return exits.layerNotFound(name);
     }
 
   }

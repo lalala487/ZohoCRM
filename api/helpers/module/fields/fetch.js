@@ -17,9 +17,6 @@ module.exports = {
 
 
   exits: {
-    layerNotFound: {
-      description: `There is no WideStage layer for selected module. Please create it before fetch`
-    }
   },
 
 
