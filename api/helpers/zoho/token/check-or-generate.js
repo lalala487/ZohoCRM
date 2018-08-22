@@ -27,6 +27,7 @@ module.exports = {
     let tokenPreset = false;
 
     setTimeout(async () => {
+      console.log(`timeout and tokenPreset ${tokenPreset}`);
       if (!tokenPreset) {
         try {
           await generateToken(ZCRMRestClient, grantToken);
@@ -38,7 +39,9 @@ module.exports = {
     }, 5000);
 
     try {
+      console.log('before try fetch');
       await fetchRecords(ZCRMRestClient);
+      console.log('after try fetch');
       tokenPreset = true;
 
       return exits.success();
