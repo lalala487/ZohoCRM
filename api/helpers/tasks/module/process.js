@@ -88,7 +88,7 @@ async function mapRecords(dataLayer, wideStageData) {
   const records = wideStageData.map(row => {
     const record = _.transform(mapping, (carry, target, source) => {
       if (row.hasOwnProperty(source)) {
-        carry[target] = prepareZohoData(row[source], zohoTypes[target]);
+        carry[target] = prepareZohoData(row, source, zohoTypes[target], dataLayer);
       }
     });
 
@@ -117,8 +117,9 @@ async function getZohoFieldTypes(dataLayer) {
   return fields;
 }
 
-function prepareZohoData(value, config) {
-  const moment = require('moment');
+function prepareZohoData(row, source, config, dataLayer) {
+  const value = row[source];
+
   let prepared;
   switch (config.data_type) {
     case 'boolean':
@@ -145,16 +146,38 @@ function prepareZohoData(value, config) {
       prepared = value;
       break;
     case 'date':
-      prepared = moment(value).format('YYYY-MM-DD');
+      prepared = formatDate(value, 'YYYY-MM-DD', source, dataLayer);
       break;
     case 'datetime':
-      prepared = moment(value).format('YYYY-MM-DDTHH:mm:ssZ');
+      prepared = formatDate(value, 'YYYY-MM-DDTHH:mm:ssZ', source, dataLayer);
       break;
     default:
       prepared = value;
   }
 
   return prepared;
+}
+
+function formatDate(value, format, source, dataLayer) {
+  const moment = require('moment');
+  let momentObj;
+
+  if (typeof value === 'string') {
+    const inputFormat = getInputDateFormat(source, dataLayer);
+    momentObj = moment(value, inputFormat);
+  } else {
+    momentObj = moment(value);
+  }
+
+  return momentObj.format(format);
+}
+
+function getInputDateFormat(dataLayer, source) {
+  for(let object of dataLayer.objects) {
+    if (source === sails.helpers.widestage.field.id.prepare(object)) {
+      return object.elementLabel;
+    }
+  }
 }
 
 async function getDbConnection(dataLayer) {
