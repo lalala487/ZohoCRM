@@ -24,29 +24,31 @@ module.exports = {
 
     const ZCRMRestClient = await sails.helpers.zoho.client.get();
     const {grantToken} = inputs;
-    let tokenPreset = false;
 
-    setTimeout(async () => {
-      console.log(`timeout and tokenPreset ${tokenPreset}`);
-      if (!tokenPreset) {
-        try {
-          await generateToken(ZCRMRestClient, grantToken);
-          return exits.success();
-        } catch (e) {
-          return exits.error(e);
+    if (os.platform() === 'win32') {
+      let tokenPreset = false;
+
+      setTimeout(async () => {
+        if (!tokenPreset) {
+          try {
+            await generateToken(ZCRMRestClient, grantToken);
+            return exits.success();
+          } catch (e) {
+            return exits.error(e);
+          }
         }
+      }, 5000);
+
+      try {
+        await fetchRecords(ZCRMRestClient);
+        tokenPreset = true;
+
+        return exits.success();
+      } catch (e) {
+        console.error(e);
       }
-    }, 5000);
-
-    try {
-      console.log('before try fetch');
-      await fetchRecords(ZCRMRestClient);
-      console.log('after try fetch');
-      tokenPreset = true;
-
-      return exits.success();
-    } catch (e) {
-      console.error(e);
+    } else {
+      await generateToken(ZCRMRestClient, grantToken);
     }
 
   }
