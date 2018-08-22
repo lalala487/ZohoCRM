@@ -52,10 +52,13 @@ async function saveInsertedData(dataLayer, inserted, uniqueData) {
 
   const connection = await getDbConnection(dataLayer);
 
-  await sails.helpers.util.asyncForEach(inserted.data, async ({code, details}, index) => {
+  await sails.helpers.util.asyncForEach(inserted.data, async (record, index) => {
+    const {code, details} = record;
     if (code === 'SUCCESS') {
       const sql = `UPDATE ${uniqueField.collectionName} SET ${FIELDS.ZOHO_ID} = ? WHERE ${uniqueField.elementName} = ?;`;
       await sails.helpers.databaseJs.execute(connection, sql, [details.id, uniqueData[index]]);
+    } else {
+      sails.log.error(record);
     }
   });
 }

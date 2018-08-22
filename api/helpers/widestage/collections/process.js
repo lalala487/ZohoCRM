@@ -42,6 +42,7 @@ module.exports = {
 
     const leadTable = findLeadTable(collections);
 
+    const WIDESTAGE_LAYER = require('../../../enums/WIDESTAGE/FIELDS');
 
     collections.forEach(table => {
       table.columns.forEach(field => {
@@ -49,8 +50,12 @@ module.exports = {
 
         if (field.hidden != true) {
           const theElementID = sails.helpers.widestage.field.id.prepare(field);
-          fields.push(table.collectionID + '.' + field.elementName + ' as ' + theElementID);
-          groupBy.push(table.collectionID + '.' + field.elementName);
+          const fieldDBName = table.collectionID + '.' + field.elementName;
+          fields.push(fieldDBName + ' as ' + theElementID);
+
+          if (field.elementLabel !== WIDESTAGE_LAYER.UNIQUE) {
+            groupBy.push(fieldDBName);
+          }
         }
       });
     });
@@ -118,9 +123,11 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
 
   sql += ' FROM ' + fromSql + ' ' + leadTable.collectionID + getJoins(leadTable.collectionID, collections, []);
 
+  /*
   const FIELDS = require('../../../enums/DB/FIELDS');
 
   sql += ` WHERE ${FIELDS.ZOHO_ID} IS NULL`;// TODO remove this cause it breaks all logic
+  */
   if (groupBy.length > 0) {
     sql += ' GROUP BY ';
     for (let f in groupBy) {
