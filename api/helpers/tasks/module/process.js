@@ -48,7 +48,7 @@ async function process(dataLayer, limit, page = 1) {
 async function saveInsertedData(dataLayer, inserted, uniqueData) {
   const FIELDS = require('../../../enums/DB/FIELDS');
 
-  const uniqueField = getUniqueField(dataLayer);
+  const uniqueField = sails.helpers.widestage.getUniqueField(dataLayer);
 
   const connection = await getDbConnection(dataLayer);
 
@@ -79,7 +79,7 @@ async function getRecords(dataLayer, limit, page = 1) {
 async function mapRecords(dataLayer, wideStageData) {
   const mapping = await sails.helpers.module.mapping.get(dataLayer);
 
-  const uniqueField = getUniqueField(dataLayer);
+  const uniqueField = sails.helpers.widestage.getUniqueField(dataLayer);
   const uniqueFieldIndex = sails.helpers.widestage.field.id.prepare(uniqueField);
   const uniqueData = [];
 
@@ -160,18 +160,5 @@ function prepareZohoData(value, config) {
 async function getDbConnection(dataLayer) {
   const dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
   return await sails.helpers.widestage.connection.get(dataSource);
-}
-
-function getUniqueField(dataLayer) {
-  const WIDESTAGE_LAYER = require('../../../enums/WIDESTAGE/FIELDS');
-  const uniqueField = dataLayer.objects.find(field => {
-    return field.elementLabel === WIDESTAGE_LAYER.UNIQUE;
-  });
-
-  if (uniqueField) {
-    return uniqueField;
-  } else {
-    throw new Error(`Missed ${WIDESTAGE_LAYER.UNIQUE} in data layer ${dataLayer.name}`);
-  }
 }
 

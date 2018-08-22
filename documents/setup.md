@@ -9,12 +9,13 @@
             - Please notice if there is an old `oauthtokens` table you should get rid of it in some way
 2. Widestage
     1. Add connection to prepared DB
-    2. Prepare data layer
+    2. Get rid of old data layers with `[Zoho_module]` name to avoid confusing
+    3. Prepare data layer
         1. Create layer with name which is equal to Zoho module API name: Contacts, Deals (not Potentials), CustomModule5 (not Transactions) etc
         2. Configure Data layer
             1. Add all DB tables fields which you wanna import to layer elements
             2. Add unique DB field to layer elements and set its title to **UNIQUE_IMPORT**
-    3. Do points 1-2 for all modules you wanna import
+    4. Do point 3 for all modules you wanna import
 3. Sails
     1. Configure SDK connection to Zoho
         1. Create API client

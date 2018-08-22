@@ -21,6 +21,7 @@ module.exports.custom = {
   // …
 
   zoho: {
+    dbIdFieldName: 'z_id',
     chunkSize: 200
   }
 

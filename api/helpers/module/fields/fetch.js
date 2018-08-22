@@ -24,7 +24,11 @@ module.exports = {
 
     const {module} = inputs;
 
-    const connection = await sails.helpers.module.connection.get(module);
+    const layer = await sails.helpers.widestage.layer.get(module);
+
+    const connection = await sails.helpers.widestage.connection.getByLayer(layer);
+
+    await addZohoIdField(connection, layer);
 
     const fieldsMap = await getApiFields(module);
 
@@ -86,5 +90,22 @@ async function createMappingTable(connection, module, fieldsMap) {
   await sails.helpers.databaseJs.execute(connection, createTableSql);
 
   return table;
+}
+
+async function addZohoIdField(connection, dataLayer) {
+  try {
+    const FIELDS = require('../../../enums/DB/FIELDS');
+    const uniqueField = sails.helpers.widestage.getUniqueField(dataLayer);
+
+    const sql = `ALTER TABLE ${uniqueField.collectionName} ADD ${FIELDS.ZOHO_ID} VARCHAR(31) NULL;`;
+
+    try {
+      await sails.helpers.databaseJs.execute(connection, sql);
+    } catch (e) {
+      console.error(e);
+    }
+  } catch (e) {//missed unique field
+    console.log(e);
+  }
 }
 

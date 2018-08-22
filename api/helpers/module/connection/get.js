@@ -25,8 +25,7 @@ module.exports = {
     const {module} = inputs;
 
     const layer = await sails.helpers.widestage.layer.get(module);
-    const dataSource = await sails.helpers.widestage.datasource.get(layer);
-    const connection = await sails.helpers.widestage.connection.get(dataSource);
+    const connection = await sails.helpers.widestage.connection.getByLayer(layer);
     // All done.
     return exits.success(connection);
   }
