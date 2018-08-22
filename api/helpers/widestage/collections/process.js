@@ -61,7 +61,7 @@ module.exports = {
 
     const result = await sails.helpers.databaseJs.query(connection, sql);
 
-    const finalResults = getFormatedResult(elements, result);
+    const finalResults = getFormattedResult(elements, result);
 
     // All done.
     return exits.success(finalResults);
@@ -117,6 +117,9 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
 
   sql += ' FROM ' + fromSql + ' ' + leadTable.collectionID + getJoins(leadTable.collectionID, collections, []);
 
+  const FIELDS = require('../../../enums/DB/FIELDS');
+
+  sql += ` WHERE ${FIELDS.ZOHO_ID} IS NULL`;
   if (groupBy.length > 0) {
     sql += ' GROUP BY ';
     for (let f in groupBy) {
@@ -145,7 +148,7 @@ function setLimitToSQL(sql,limit,offset) {
   return sql;
 }
 
-function getFormatedResult(elementSchema, results) {
+function getFormattedResult(elementSchema, results) {
   const finalResults = [];
   const moment = require('moment');
   results.forEach(result => {
