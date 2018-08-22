@@ -62,7 +62,7 @@ module.exports = {
 
     const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, params);
 
-    console.log(sql);
+    // sails.log(sql);
     const connection = await sails.helpers.widestage.connection.get(dataSource);
 
     const result = await sails.helpers.databaseJs.query(connection, sql);
