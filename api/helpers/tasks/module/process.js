@@ -163,7 +163,7 @@ function formatDate(value, format, source, dataLayer) {
   let momentObj;
 
   if (typeof value === 'string') {
-    const inputFormat = getInputDateFormat(source, dataLayer);
+    const inputFormat = getInputDateFormat(dataLayer, source);
     momentObj = moment(value, inputFormat);
   } else {
     momentObj = moment(value);
