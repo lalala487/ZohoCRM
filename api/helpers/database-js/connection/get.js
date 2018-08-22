@@ -43,8 +43,13 @@ module.exports = {
     try {
       const Database = require('database-js').Connection;
       const {userName, password, host, port, database} = params;
-      const connection = new Database(`database-js-mysql://${userName}:${password}@${host}:${port}/${database}`);
-      return exits.success(connection);
+      const connectionString = `database-js-mysql://${userName}:${password}@${host}:${port}/${database}`;
+
+      if (typeof connections[connectionString] === 'undefined') {
+        connections[connectionString] = new Database(connectionString);
+      }
+
+      return exits.success(connections[connectionString]);
     } catch (e) {
       return exits.cantEstablishConnection(e, params);
     }
