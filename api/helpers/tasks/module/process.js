@@ -66,6 +66,7 @@ async function insertToZoho(dataLayer, {records, uniqueData}) {
   // const inserted = {data: [{code: 'SUCCESS', details: {id: + (new Date())}},{code: 'SUCCESS', details: {id: + (new Date()) + 35}}]};//TESTCODE
 
   if (inserted.hasOwnProperty('data')) {
+    console.log(inserted.data);
     await saveInsertedData(dataLayer, inserted, uniqueData);
   }
 }
