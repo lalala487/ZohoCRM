@@ -25,7 +25,7 @@ module.exports = {
     const ZCRMRestClient = await sails.helpers.zoho.client.get();
     const {grantToken} = inputs;
 
-    if (os.platform() === 'win32') {
+    if (process.platform === 'win32') {
       let tokenPreset = false;
 
       setTimeout(async () => {
