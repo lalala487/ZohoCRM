@@ -49,6 +49,8 @@ module.exports = {
       }
     } else {
       await generateToken(ZCRMRestClient, grantToken);
+
+      return exits.success();
     }
 
   }
