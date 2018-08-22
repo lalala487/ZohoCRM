@@ -123,7 +123,7 @@ function prepareZohoData(value, config) {
   switch (config.data_type) {
     case 'boolean':
       if (typeof value === 'string') {
-        prepared = value === 'true';
+        prepared = ['true', 'y', 'yes'].indexOf(value.toLowerCase()) !== -1;
       } else {
         prepared = !!value;
       }
