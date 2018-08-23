@@ -143,10 +143,12 @@ function prepareZohoData(record, target, row, source, config, dataLayer) {
       prepared = {id: value};
       break;
     case 'bigint':
-    case 'currency':
-    case 'double':
     case 'integer':
       prepared = value;//CHECKME do we need convert value here?
+      break;
+    case 'currency':
+    case 'double':
+      prepared = typeof value === 'string' ? parseFloat(value) : value;
       break;
     case 'multiselectpicklist':
       prepared = value.split(',');
