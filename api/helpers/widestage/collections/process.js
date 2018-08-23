@@ -50,7 +50,7 @@ module.exports = {
 
         if (field.hidden != true) {
           const theElementID = sails.helpers.widestage.field.id.prepare(field);
-          const fieldDBName = table.collectionID + '.' + field.elementName;
+          const fieldDBName = `${table.collectionID}.\`${field.elementName}\``;
           fields.push(fieldDBName + ' as ' + theElementID);
 
           if (field.elementLabel !== WIDESTAGE_LAYER.UNIQUE) {
