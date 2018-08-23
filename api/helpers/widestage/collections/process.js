@@ -128,6 +128,7 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
 
   sql += ` WHERE ${FIELDS.ZOHO_ID} IS NULL`;// TODO remove this cause it breaks all logic
   */
+  /*
   if (groupBy.length > 0) {
     sql += ' GROUP BY ';
     for (let f in groupBy) {
@@ -137,6 +138,7 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
       }
     }
   }
+  */
 
   {
     const {page, limit: pageSize} = params;

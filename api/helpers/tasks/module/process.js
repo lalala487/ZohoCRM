@@ -69,7 +69,7 @@ async function insertToZoho(dataLayer, {records, uniqueData}) {
   // const inserted = {data: [{code: 'SUCCESS', details: {id: + (new Date())}},{code: 'SUCCESS', details: {id: + (new Date()) + 35}}]};//TESTCODE
 
   if (inserted.hasOwnProperty('data')) {
-    // console.log(inserted.data);
+    console.log(records.length, inserted.data.length);
     await saveInsertedData(dataLayer, inserted, uniqueData);
   }
 }
@@ -140,6 +140,8 @@ function prepareZohoData(record, target, row, source, config, dataLayer) {
       break;
     case 'lookup':
     case 'ownerlookup':
+      if (!value) {return;}
+
       prepared = {id: value};
       break;
     case 'bigint':
