@@ -92,7 +92,11 @@ async function mapRecords(dataLayer, wideStageData) {
   const records = wideStageData.map(row => {
     const record = _.transform(mapping, (carry, target, source) => {
       if (row.hasOwnProperty(source)) {
-        carry[target] = prepareZohoData(row, source, zohoTypes[target], dataLayer);
+        if (zohoTypes[target]) {
+          carry[target] = prepareZohoData(row, source, zohoTypes[target], dataLayer);
+        } else {
+          sails.log.error(`Looks like you have old field name in your mapping layer: ${dataLayer.name}`);
+        }
       }
     });
 
