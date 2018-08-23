@@ -93,7 +93,7 @@ async function mapRecords(dataLayer, wideStageData) {
     const record = _.transform(mapping, (carry, target, source) => {
       if (row.hasOwnProperty(source)) {
         if (zohoTypes[target]) {
-          carry[target] = prepareZohoData(row, source, zohoTypes[target], dataLayer);
+          prepareZohoData(carry, target, row, source, zohoTypes[target], dataLayer);
         } else {
           sails.log.error(`Looks like you have old field name in your mapping layer: ${dataLayer.name}`);
         }
@@ -125,11 +125,12 @@ async function getZohoFieldTypes(dataLayer) {
   return fields;
 }
 
-function prepareZohoData(row, source, config, dataLayer) {
+function prepareZohoData(record, target, row, source, config, dataLayer) {
   const value = row[source];
+  const {data_type: dataType} = config;
 
   let prepared;
-  switch (config.data_type) {
+  switch (dataType) {
     case 'boolean':
       if (typeof value === 'string') {
         prepared = ['true', 'y', 'yes'].indexOf(value.toLowerCase()) !== -1;
@@ -154,14 +155,19 @@ function prepareZohoData(row, source, config, dataLayer) {
       prepared = value;
       break;
     case 'date':
-      prepared = formatDate(value, 'YYYY-MM-DD', source, dataLayer);
-      break;
     case 'datetime':
-      prepared = formatDate(value, 'YYYY-MM-DDTHH:mm:ssZ', source, dataLayer);
+      if (!value) {
+        return;//skip filling empty values
+      }
+
+      const dateFormat = dataType === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ssZ';
+      prepared = formatDate(value, dateFormat, source, dataLayer);
       break;
     default:
       prepared = value;
   }
+
+  record[target] = prepared;
 
   return prepared;
 }
