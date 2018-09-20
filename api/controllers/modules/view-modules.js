@@ -27,6 +27,10 @@ module.exports = {
         module.title += ` - ${name}`;
       }
 
+      if (code !== name) {
+        module.title += ` - [${code}]`;
+      }
+
       return module;
     });
 
