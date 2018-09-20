@@ -3,18 +3,30 @@
         1. Create DB for new imported data
         2. Import data, which you wanna import, into tables (Separate tables for every new instance)
         3. Add **z_id** column to every instance table. Here will be saved inserted Zoho record ids
+        4. Add required indexes
+            - If you have direct join via tables Primary key for joined field is enough
+            - If you have joins through table you should add paired primary key and single second index: e.g. for
+             `Job->Jobs_Visa->Visa` join in **Jobs_Visa**  table you should add paired key `(Job_PK, Visa_PK)` and single `Visa_PK`
     2. Create table for Zoho token management system
         1. Create DB with name `zohooauth`
-        2. Create table `oauthtokens` by running script **CREATE TABLE \`oauthtokens\` ( \`useridentifier\` varchar(255) NOT NULL, \`accesstoken\` varchar(255) NOT NULL, \`refreshtoken\` varchar(255) NOT NULL, \`expirytime\` bigint(20) NOT NULL ) ENGINE=InnoDB DEFAULT CHARSET=utf8**
+        2. Create table `oauthtokens` by running script
+        **CREATE TABLE \`oauthtokens\` ( \`useridentifier\` varchar(255) NOT NULL, \`accesstoken\` varchar(255) NOT NULL,
+         \`refreshtoken\` varchar(255) NOT NULL, \`expirytime\` bigint(20) NOT NULL ) ENGINE=InnoDB DEFAULT CHARSET=utf8**
             - Please notice if there is an old `oauthtokens` table you should get rid of it in some way
 2. Widestage
     1. Add connection to prepared DB
     2. Get rid of old data layers with `[Zoho_module]` name to avoid confusing
     3. Prepare data layer
-        1. Create layer with name which is equal to Zoho module API name: Contacts, Deals (not Potentials), CustomModule5 (not Transactions) etc
+        1. Create layer with name which is equal to Zoho module API name: Contacts, Deals (not Potentials),
+         CustomModule5 (not Transactions), Sahar (not CustomModule2 or Visa) etc
         2. Configure Data layer
             1. Add all DB tables fields which you wanna import to layer elements
             2. Add unique DB field to layer elements and set its title to **UNIQUE_IMPORT**
+            3. Add joins between all required to import linked fields
+                1. Select Join Type logic
+                    1. You should select your main module side on join. Usually **Left**
+                    2. If you has through table dependencies `(e.g Job->Jobs_Visa->Visa)`
+                     you should build them in appropriate order (`Jobs LEFT JOIN Jobs_Visa LEFT JOIN Visa`)
     4. Do point 3 for all modules you wanna import
 3. Sails
     1. Configure SDK connection to Zoho
@@ -33,7 +45,8 @@
                 1. Fill `api.user_identifier` with value of user email which is used to enter to Zoho
                 2. Provide DB credentials in **[mysql]** section
             3. Setup **oauth_configuration.properties**
-                1. Find created client in [developer console] and go to **Edit** action: open extra actions (three vertical points) and click **Edit**
+                1. Find created client in [developer console] and go to **Edit** action:
+                 open extra actions (three vertical points) and click **Edit**
                 2. Fill `clientid`, `clientsecret` and `redirecturl` with appropriate values
         3. Setup API token
             1. Find created client in [developer console] and go to **Self client** action
@@ -52,7 +65,8 @@
         1. Create layer with name `[Zoho_module]_mapping`
         2. Add to the layer all used for data tables and `[Zoho_module]_fields` table.
         3. Join each data field with appropriate field in `[Zoho_module]_fields` table
-            1. If you wanna setup lookup from joined in data layer field, just add join with `z_id` from joined table with required Lookup field in Zoho: `Contact_Name` etc. 
+            1. If you wanna setup lookup from joined in data layer field, just add join with `z_id`
+             from joined table with required Lookup field in Zoho: `Contact_Name` etc.
 
 
 [developer console]: https://accounts.zoho.com/developerconsole
