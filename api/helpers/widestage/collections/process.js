@@ -146,7 +146,7 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
   }
   //Fix for filters with having and normal filters
   sql = sql.replace('WHERE  AND', 'WHERE');
-
+  sails.log.debug("sql:",sql);
   return sql;
 }
 
