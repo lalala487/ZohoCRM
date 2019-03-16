@@ -91,7 +91,7 @@ async function mapRecords(dataLayer, wideStageData) {
 
   const records = wideStageData.map(row => {
     const record = _.transform(mapping, (carry, target, source) => {
-      if(source=="z_id")
+      
         sails.log.debug(carry,target,source);
       if (row.hasOwnProperty(source)) {
         if (zohoTypes[target]) {
