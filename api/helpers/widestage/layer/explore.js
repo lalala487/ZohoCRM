@@ -40,7 +40,7 @@ module.exports = {
     const _dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
 
     const collections = prepareCollections(dataLayer);
-
+    sails.log.debug(collections);
     const dataSource = {
       datasourceID: _dataSource.id,
       params: _dataSource.params,
