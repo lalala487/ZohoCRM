@@ -90,9 +90,8 @@ async function mapRecords(dataLayer, wideStageData) {
   const zohoTypes = await getZohoFieldTypes(dataLayer);
 
   const records = wideStageData.map(row => {
+    sails.log.debug(row);
     const record = _.transform(mapping, (carry, target, source) => {
-      
-        sails.log.debug(carry,target,source);
       if (row.hasOwnProperty(source)) {
         if (zohoTypes[target]) {
           prepareZohoData(carry, target, row, source, zohoTypes[target], dataLayer);
