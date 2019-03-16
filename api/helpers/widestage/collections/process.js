@@ -118,7 +118,7 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
   }
 
   const leadSchema = leadTable.schema || leadTable;
-
+  sails.log.debug(leadSchema);
   const fromSql = leadSchema.isSQL === true ? '(' + leadSchema.sqlQuery + ')' : leadSchema.collectionName;
 
   sql += ' FROM ' + fromSql + ' ' + leadTable.collectionID + getJoins(leadTable.collectionID, collections, []);
