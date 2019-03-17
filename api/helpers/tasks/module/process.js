@@ -38,6 +38,7 @@ module.exports = {
 async function process(dataLayer, limit, page = 1) {
   const prepared = await getRecords(dataLayer, limit, page);
   const {records} = prepared;
+  sails.log.debug(records.length);
   if (records.length) {
     await insertToZoho(dataLayer, prepared);
 
