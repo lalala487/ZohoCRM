@@ -59,10 +59,15 @@ module.exports = {
         }
       });
     });
-
-    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, params);
-
-    // sails.log(sql);
+      
+      const zohoid = await sails.helpers.widestage.layer.explore.get_zoho_id(collections);
+      sails.log.debug("zoho id outside:",zohoid);
+      let zoho_new="";
+      if(zohoid)zoho_new=" WHERE "+zohoid.collectionID+"."+zohoid.elementID+" IS NULL";
+      
+    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, params)+ zoho_new;
+    
+     sails.log(sql);
     const connection = await sails.helpers.widestage.connection.get(dataSource);
 
     const result = await sails.helpers.databaseJs.query(connection, sql);

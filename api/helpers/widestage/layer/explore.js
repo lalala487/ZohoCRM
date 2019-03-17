@@ -40,8 +40,7 @@ module.exports = {
     const _dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
 
     const collections = prepareCollections(dataLayer);
-    const zohoid = get_zoho_id(collections);
-    sails.log.debug("zoho id outside:",zohoid);
+    
     const dataSource = {
       datasourceID: _dataSource.id,
       params: _dataSource.params,
@@ -85,8 +84,8 @@ function get_zoho_id(collections){
             if(col && col.description && col.description==="ZOHO_ID")
               res.collectionID=col.collectionID;
               res.elementID=col.elementID;
-              sails.log.debug("Found zohoId:",res);
-            
+              //sails.log.debug("Found zohoId:",res);
+         
           })
       }
     });
