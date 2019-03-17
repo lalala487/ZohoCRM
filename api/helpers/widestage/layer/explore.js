@@ -41,7 +41,7 @@ module.exports = {
 
     const collections = prepareCollections(dataLayer);
     const zohoid = get_zoho_id(collections);
-    
+    sails.log.debug("zoho id outside:",zohoid);
     const dataSource = {
       datasourceID: _dataSource.id,
       params: _dataSource.params,
@@ -78,14 +78,19 @@ function prepareCollections(dataLayer) {
 
 function get_zoho_id(collections){
   collections.forEach(function(c){
-      
+      let res={collectionID:"",elementID:""};
       if(c["columns"]){
           c["columns"].forEach(function (col){
-            sails.log.debug(col);
+            if(col && col.description && col.description==="ZOHO_ID")
+              res.collectionID=col.collectionID;
+              res.elementID=col.elementID;
+              sails.log.debug("Found zohoId:",res);
+            
           })
       }
     });
-  return "ok";
+  
+  return res;
 }
 
 function processJoines(dataLayer, collections) {
