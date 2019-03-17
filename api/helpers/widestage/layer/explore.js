@@ -77,8 +77,9 @@ function prepareCollections(dataLayer) {
 }
 
 function get_zoho_id(collections){
+  let res={collectionID:"",elementID:""};
   collections.forEach(function(c){
-      let res={collectionID:"",elementID:""};
+      
       if(c["columns"]){
           c["columns"].forEach(function (col){
             if(col && col.description && col.description==="ZOHO_ID")
