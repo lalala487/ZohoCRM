@@ -80,7 +80,7 @@ function get_zoho_id(collections){
   collections.forEach(function(c){
       
       if(c["columns"]){
-          c["columns"].foreach(function (col){
+          c["columns"].forEach(function (col){
             sails.log.debug(col);
           })
       }
