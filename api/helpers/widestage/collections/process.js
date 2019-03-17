@@ -60,12 +60,9 @@ module.exports = {
       });
     });
       
-      const zohoid = get_zoho_id(collections);
-      sails.log.debug("zoho id outside:",zohoid);
-      let zoho_new="";
-      if(zohoid)zoho_new=" WHERE "+zohoid.collectionID+"."+zohoid.elementID+" IS NULL";
+     
       
-    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, params)+ zoho_new;
+    const sql = prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, params);
     
      sails.log(sql);
     const connection = await sails.helpers.widestage.connection.get(dataSource);
@@ -83,14 +80,14 @@ module.exports = {
 };
 
 function get_zoho_id(collections){
-    let res={collectionID:"",elementID:""};
+    let res=null;
     collections.forEach(function(c){
 
         if(c["columns"]){
             c["columns"].forEach(function (col){
-                if(col && col.description && col.description==="ZOHO_ID")
-                    res.collectionID=col.collectionID;
-                res.elementID=col.elementID;
+                if(col && col.description && col.description==="ZOHO_ID") 
+                  res={collectionID:col.collectionID,elementID:col.elementID}
+                
                 //sails.log.debug("Found zohoId:",res);
 
             })
@@ -145,11 +142,20 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
 
   sql += ' FROM ' + fromSql + ' ' + leadTable.collectionID + getJoins(leadTable.collectionID, collections, []);
 
-  /*
+  
   const FIELDS = require('../../../enums/DB/FIELDS');
 
-  sql += ` WHERE ${FIELDS.ZOHO_ID} IS NULL`;// TODO remove this cause it breaks all logic
-  */
+
+    const zohoid = get_zoho_id(collections);
+    sails.log.debug("zoho id outside:",zohoid);
+    
+   
+    if(zohoid){
+        sql += ' WHERE '+zohoid.collectionID+'`'+FIELDS.ZOHO_ID+'` =\'\''+
+        ' OR '+zohoid.collectionID+'`'+FIELDS.ZOHO_ID+'` IS NULL' ;
+        
+    }
+      
   /*
   if (groupBy.length > 0) {
     sql += ' GROUP BY ';
