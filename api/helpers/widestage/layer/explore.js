@@ -75,23 +75,7 @@ function prepareCollections(dataLayer) {
   }, []);
 }
 
-function get_zoho_id(collections){
-  let res={collectionID:"",elementID:""};
-  collections.forEach(function(c){
-      
-      if(c["columns"]){
-          c["columns"].forEach(function (col){
-            if(col && col.description && col.description==="ZOHO_ID")
-              res.collectionID=col.collectionID;
-              res.elementID=col.elementID;
-              //sails.log.debug("Found zohoId:",res);
-         
-          })
-      }
-    });
-  
-  return res;
-}
+
 
 function processJoines(dataLayer, collections) {
   for (let n in dataLayer.params.joins) {

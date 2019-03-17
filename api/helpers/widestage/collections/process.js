@@ -151,8 +151,8 @@ function prepareSqlQuery(fields, leadTable, collections, groupBy, dataSource, pa
     
    
     if(zohoid){
-        sql += ' WHERE '+zohoid.collectionID+'`'+FIELDS.ZOHO_ID+'` =\'\''+
-        ' OR '+zohoid.collectionID+'`'+FIELDS.ZOHO_ID+'` IS NULL' ;
+        sql += ' WHERE '+zohoid.collectionID+'.`'+FIELDS.ZOHO_ID+'` =""'+
+        ' OR '+zohoid.collectionID+'.`'+FIELDS.ZOHO_ID+'` IS NULL' ;
         
     }
       
