@@ -40,6 +40,7 @@ module.exports = {
     const _dataSource = await sails.helpers.widestage.datasource.get(dataLayer);
 
     const collections = prepareCollections(dataLayer);
+    const zohoid = get_zoho_id(collections);
     
     const dataSource = {
       datasourceID: _dataSource.id,
@@ -70,12 +71,22 @@ function prepareCollections(dataLayer) {
     }, []);
 
     const collection = {collectionID, columns, schema};
-    sails.log.debug(collectionID,schema,columns);
     carry.push(collection);
     return carry;
   }, []);
 }
 
+function get_zoho_id(collections){
+  collections.forEach(function(c){
+      
+      if(c["columns"]){
+          c["columns"].foreach(function (col){
+            sails.log.debug(col);
+          })
+      }
+    });
+  return "ok";
+}
 
 function processJoines(dataLayer, collections) {
   for (let n in dataLayer.params.joins) {
