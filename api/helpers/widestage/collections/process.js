@@ -60,7 +60,7 @@ module.exports = {
       });
     });
       
-      const zohoid = await sails.helpers.widestage.layer.explore.get_zoho_id(collections);
+      const zohoid = get_zoho_id(collections);
       sails.log.debug("zoho id outside:",zohoid);
       let zoho_new="";
       if(zohoid)zoho_new=" WHERE "+zohoid.collectionID+"."+zohoid.elementID+" IS NULL";
@@ -81,6 +81,24 @@ module.exports = {
 
 
 };
+
+function get_zoho_id(collections){
+    let res={collectionID:"",elementID:""};
+    collections.forEach(function(c){
+
+        if(c["columns"]){
+            c["columns"].forEach(function (col){
+                if(col && col.description && col.description==="ZOHO_ID")
+                    res.collectionID=col.collectionID;
+                res.elementID=col.elementID;
+                //sails.log.debug("Found zohoId:",res);
+
+            })
+        }
+    });
+
+    return res;
+}
 
 function findLeadTable(collections) {
   let leadTable = {};
